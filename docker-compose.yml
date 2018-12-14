@@ -1,0 +1,34 @@
+version: "3"
+networks:
+    postgresnet:
+
+services:
+    postgresql:
+        image: postgres:9.6
+        hostname: postgresql
+        container_name: postgresql
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=pass
+            - POSTGRES_DB=nyc_rides
+        networks:
+            - postgresnet
+        restart: always
+        ports:
+            - "5432:5432"
+        volumes:
+            - ./sql-files:/docker-entrypoint-initdb.d/
+
+    app:
+        build: .
+        hostname: app
+        container_name: app
+        command: cat /root/.local/share/jupyter/runtime/notebook_cookie_secret
+        ports:
+            - "8888:8888"
+        volumes:
+            - .:/sheets
+        depends_on:
+            - postgresql
+        networks:
+            - postgresnet
